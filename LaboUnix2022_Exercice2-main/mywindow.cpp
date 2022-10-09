@@ -23,7 +23,7 @@ MyWindow::MyWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MyWindow)
 
     // Exemples d'utilisation (à supprimer)
     setResultat(" ---- Bonjour !!! ---- ");
-    ajouteTupleTableClients("wagner",10);
+    //ajouteTupleTableClients("wagner",10);
 }
 
 MyWindow::~MyWindow()
@@ -131,13 +131,66 @@ void MyWindow::on_pushButtonLogin_clicked()
 {
   // Récupération nom et mot de passe
   char nom[20],motDePasse[20];
-  //int nouveauClient;
+  int nouveauClient;
+  int test;
+  int mdptest=-2;
   strcpy(nom,getNom());
   strcpy(motDePasse,getMotDePasse());
-  //nouveauClient = isNouveauClientChecked();
+  nouveauClient = isNouveauClientChecked();
 
   // TO DO
   printf("Clic sur bouton LOGIN\n");
+  if(nouveauClient==1)
+  {
+    test=estPresent(nom);
+    //printf("%d", test);
+    if(test > 0)
+    {
+      //printf("yo1");
+      setResultat(" ---- Client deja existant !!! ---- ");
+      // return -1; //?
+    }
+
+    else
+    {
+      //printf("yo");
+      ajouteClient(nom, motDePasse);
+      setResultat("Nouveau client créé : bienvenue !");
+    }
+  }
+  else
+  {
+    int pos;
+
+    pos=estPresent(nom);
+
+    //printf("yo");
+
+    if(pos>0)
+    {
+      //printf("yo1");
+      mdptest=verifieMotDePasse(pos, motDePasse);
+      //printf("mdptest = %d", mdptest);
+      if(mdptest==1)
+      {
+        //printf("yo2");
+        setResultat("Rebonjour cher client !");
+      }
+      else
+      {
+        //printf("yo3");
+        setResultat("Mot de passe incorrect…");
+      }
+
+    }
+    else
+    {
+      //printf("yo4");
+      setResultat("Client inconnu");
+    }
+  }
+
+
 
 }
 
@@ -146,4 +199,23 @@ void MyWindow::on_pushButtonAfficheFichier_clicked()
 {
   // TO DO
   printf("Clic sur bouton AFFICHER\n");
+
+
+
+  CLIENT vec[1000];//changer en fct du nombre de clients
+  int nbCli, i;
+  CLIENT *pvec;
+
+  
+
+  pvec=&vec[0];
+
+  nbCli = listeClients(vec);
+
+  videTableClients();
+
+  for(i=0;i<nbCli;i++,pvec++)
+  {
+    ajouteTupleTableClients(pvec->nom, 3);
+  }
 }
