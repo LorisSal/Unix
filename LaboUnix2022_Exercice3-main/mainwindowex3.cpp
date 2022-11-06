@@ -147,24 +147,20 @@ void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
   fprintf(stderr,"Clic sur le bouton Lancer Recherche\n");
 
   pid_t idFils1,idFils2,idFils3, id;
-  int status, fd;
+  int status, fd, fdDup;
 
-  if((fd = open("Trace.log", O_WRONLY))==-1)
+  if((fd = open("Trace.log", O_WRONLY | O_APPEND))==-1)
   {
-    fd = open("Trace.log", O_CREAT | O_WRONLY, 0777);
+    fd = open("Trace.log", O_CREAT | O_WRONLY | O_APPEND, 0777);
   }
 
+  fdDup = dup2(fd, 2);
 
-  if(dup2(fd, 2)==-1)
+  if(fdDup==-1)
   {
     perror("erreur de dup");
     exit(1);
   }
-
-
-  fprintf(stderr,"Clic sur le bouton Lancer Recherche\n");
-
-
 
   if(recherche1Selectionnee()==1)
   {
@@ -243,6 +239,8 @@ void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
       setResultat3(WEXITSTATUS(status));
     }
   }
+
+  // close(fdDup);
 }
 
 void MainWindowEx3::on_pushButtonVider_clicked()
