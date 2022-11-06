@@ -23,7 +23,6 @@ MyWindow::MyWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MyWindow)
 
     // Exemples d'utilisation (à supprimer)
     setResultat(" ---- Bonjour !!! ---- ");
-    //ajouteTupleTableClients("wagner",10);
 }
 
 MyWindow::~MyWindow()
@@ -131,78 +130,52 @@ void MyWindow::on_pushButtonLogin_clicked()
 {
   // Récupération nom et mot de passe
   char nom[20],motDePasse[20];
-  int nouveauClient;
-  int test;
-  int mdptest=-2;
+  int nouveauClient, pos;
   strcpy(nom,getNom());
   strcpy(motDePasse,getMotDePasse());
   nouveauClient = isNouveauClientChecked();
 
-  // TO DO
   printf("Clic sur bouton LOGIN\n");
+
   if(nouveauClient==1)
   {
-    test=estPresent(nom);
-    //printf("%d", test);
-    if(test > 0)
+    if(estPresent(nom)>0)//que le client existe
     {
-      //printf("yo1");
-      setResultat(" ---- Client deja existant !!! ---- ");
-      // return -1; //?
+      setResultat("Client deja existant");
     }
-
     else
     {
-      //printf("yo");
       ajouteClient(nom, motDePasse);
-      setResultat("Nouveau client créé : bienvenue !");
+      setResultat("Nouveau Client créé");
     }
   }
-  else
+  if(nouveauClient==0)
   {
-    int pos;
-
-    pos=estPresent(nom);
-
-    //printf("yo");
-
-    if(pos>0)
+    if(estPresent(nom)>0)
     {
-      //printf("yo1");
-      mdptest=verifieMotDePasse(pos, motDePasse);
-      //printf("mdptest = %d", mdptest);
-      if(mdptest==1)
+      pos = estPresent(nom);
+      if(verifieMotDePasse(pos, motDePasse)==1)
       {
-        //printf("yo2");
-        setResultat("Rebonjour cher client !");
+        setResultat("Rebonjour cher client");
       }
-      else
+      if(verifieMotDePasse(pos, motDePasse)==0)
       {
-        //printf("yo3");
-        setResultat("Mot de passe incorrect…");
+        setResultat("MDP incorrect");
       }
-
     }
-    else
+    if(estPresent(nom)==0)
     {
-      //printf("yo4");
       setResultat("Client inconnu");
     }
   }
-
-
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MyWindow::on_pushButtonAfficheFichier_clicked()
 {
-  // TO DO
   printf("Clic sur bouton AFFICHER\n");
 
-
-
-  CLIENT vec[1000];//changer en fct du nombre de clients
+  CLIENT vec[50];//changer en fct du nombre de clients
   int nbCli, i;
   CLIENT *pvec;
 
@@ -216,6 +189,7 @@ void MyWindow::on_pushButtonAfficheFichier_clicked()
 
   for(i=0;i<nbCli;i++,pvec++)
   {
-    ajouteTupleTableClients(pvec->nom, 3);
+    ajouteTupleTableClients(pvec->nom, pvec->hash);
   }
+
 }
