@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <sys/wait.h>
+#include <errno.h>
+
 
 MainWindowEx3::MainWindowEx3(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindowEx3)
 {
@@ -57,7 +60,7 @@ void MainWindowEx3::setResultat1(int nb)
   char Text[20];
   sprintf(Text,"%d",nb);
   fprintf(stderr,"---%s---\n",Text);
-  if (strlen(Text) == 0 )
+  if (strlen(Text) == 0 || strcmp(Text, "-1")==0)
   {
     ui->lineEditResultat1->clear();
     return;
@@ -70,7 +73,7 @@ void MainWindowEx3::setResultat2(int nb)
   char Text[20];
   sprintf(Text,"%d",nb);
   fprintf(stderr,"---%s---\n",Text);
-  if (strlen(Text) == 0 )
+  if (strlen(Text) == 0  || strcmp(Text, "-1")==0)
   {
     ui->lineEditResultat2->clear();
     return;
@@ -83,7 +86,7 @@ void MainWindowEx3::setResultat3(int nb)
   char Text[20];
   sprintf(Text,"%d",nb);
   fprintf(stderr,"---%s---\n",Text);
-  if (strlen(Text) == 0 )
+  if (strlen(Text) == 0  || strcmp(Text, "-1")==0)
   {
     ui->lineEditResultat3->clear();
     return;
@@ -142,40 +145,125 @@ const char* MainWindowEx3::getGroupe3()
 void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
 {
   fprintf(stderr,"Clic sur le bouton Lancer Recherche\n");
-  // TO DO
-  pid_t idFils1,idFils2,idFils3;
 
+  pid_t idFils1,idFils2,idFils3, id;
+  int status, fd;
 
-  if((idFils1 = fork()) == -1)
+  if((fd = open("Trace.log", O_WRONLY))==-1)
   {
-    perror("(Pere) Erreur de fork(1)");
+    fd = open("Trace.log", O_CREAT | O_WRONLY, 0777);
+  }
+
+
+  if(dup2(fd, 2)==-1)
+  {
+    perror("erreur de dup");
     exit(1);
+  }
+
+
+  fprintf(stderr,"Clic sur le bouton Lancer Recherche\n");
+
+
+
+  if(recherche1Selectionnee()==1)
+  {
+    if((idFils1 = fork()) == -1 )
+    {
+      perror("(Pere) Erreur de fork(1)");
+      exit(1);
+    }
   }
 
   if (idFils1 == 0)
   {
-  // Code du fils 1
-  if (execl("./Lecture","Lecture",setGroupe1(text()),NULL) == -1)
-  {
-    perror("Erreur de execl()");
-    exit(1);
+    // Code du fils 1
+    if (execl("./Lecture","Lecture",getGroupe1(),NULL) == -1)
+    {
+      perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
+      exit(1);
+    }
   }
 
-  while((id = wait(NULL)) != -1)
+  if(recherche2Selectionnee()==1)
   {
-    printf("(Pere) Fils %d termine\n",id);
+    if((idFils2 = fork()) == -1)
+    {
+      perror("(Pere) Erreur de fork(2)");
+      exit(1);
+    }
   }
 
+  if (idFils2 == 0)
+  {
+    // Code du fils 2
+    if (execl("./Lecture","Lecture",getGroupe2(),NULL) == -1)
+    {
+      perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
+      exit(1);
+    }
+  }
+
+
+  if(recherche3Selectionnee()==1)
+  {
+    if((idFils3 = fork()) == -1)
+    {
+      perror("(Pere) Erreur de fork(3)");
+      exit(1);
+    }
+  }
+
+
+  if (idFils3 == 0)
+  {
+    // Code du fils 3
+    if (execl("./Lecture","Lecture",getGroupe3(),NULL) == -1)
+    {
+      perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
+      exit(1);
+    }
+  }
+
+  //code pere
+  while((id = wait(&status)) != -1)
+  {
+    printf("(PERE) fils %d se termine\n", id);
+
+    if(id==idFils1)
+    {
+      setResultat1(WEXITSTATUS(status));
+    }
+    else if(id==idFils2)
+    {
+      setResultat2(WEXITSTATUS(status));
+    }
+    else if(id==idFils3)
+    {
+      setResultat3(WEXITSTATUS(status));
+    }
+  }
 }
 
 void MainWindowEx3::on_pushButtonVider_clicked()
 {
   fprintf(stderr,"Clic sur le bouton Vider\n");
-  // TO DO
+
+
+  // setGroupe1("");
+  // setGroupe2("");
+  // setGroupe3("");
+  ui->lineEditGroupe1->clear();
+  ui->lineEditGroupe2->clear();
+  ui->lineEditGroupe3->clear();
+  ui->lineEditResultat1->clear();
+  ui->lineEditResultat2->clear();
+  ui->lineEditResultat3->clear();
 }
 
 void MainWindowEx3::on_pushButtonQuitter_clicked()
 {
   fprintf(stderr,"Clic sur le bouton Quitter\n");
-  // TO DO
+
+  exit(0);
 }
