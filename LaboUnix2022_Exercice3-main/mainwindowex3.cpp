@@ -60,7 +60,7 @@ void MainWindowEx3::setResultat1(int nb)
   char Text[20];
   sprintf(Text,"%d",nb);
   fprintf(stderr,"---%s---\n",Text);
-  if (strlen(Text) == 0 || strcmp(Text, "-1")==0)
+  if (strlen(Text) == 0)
   {
     ui->lineEditResultat1->clear();
     return;
@@ -73,7 +73,7 @@ void MainWindowEx3::setResultat2(int nb)
   char Text[20];
   sprintf(Text,"%d",nb);
   fprintf(stderr,"---%s---\n",Text);
-  if (strlen(Text) == 0  || strcmp(Text, "-1")==0)
+  if (strlen(Text) == 0 )
   {
     ui->lineEditResultat2->clear();
     return;
@@ -86,7 +86,7 @@ void MainWindowEx3::setResultat3(int nb)
   char Text[20];
   sprintf(Text,"%d",nb);
   fprintf(stderr,"---%s---\n",Text);
-  if (strlen(Text) == 0  || strcmp(Text, "-1")==0)
+  if (strlen(Text) == 0)
   {
     ui->lineEditResultat3->clear();
     return;
@@ -151,7 +151,7 @@ void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
 
   if((fd = open("Trace.log", O_WRONLY | O_APPEND))==-1)
   {
-    fd = open("Trace.log", O_CREAT | O_WRONLY | O_APPEND, 0777);
+    fd = open("Trace.log", O_CREAT | O_WRONLY | (O_APPEND), 0777);
   }
 
   fdDup = dup2(fd, 2);
@@ -169,16 +169,16 @@ void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
       perror("(Pere) Erreur de fork(1)");
       exit(1);
     }
-  }
-
-  if (idFils1 == 0)
-  {
-    // Code du fils 1
-    if (execl("./Lecture","Lecture",getGroupe1(),NULL) == -1)
+    if (idFils1 == 0)
     {
-      perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
-      exit(1);
+      // Code du fils 1
+      if (execl("./Lecture","Lecture",getGroupe1(),NULL) == -1)
+      {
+        perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
+        exit(1);
+      }
     }
+
   }
 
   if(recherche2Selectionnee()==1)
@@ -188,18 +188,18 @@ void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
       perror("(Pere) Erreur de fork(2)");
       exit(1);
     }
-  }
 
-  if (idFils2 == 0)
-  {
-    // Code du fils 2
-    if (execl("./Lecture","Lecture",getGroupe2(),NULL) == -1)
+    if (idFils2 == 0)
     {
-      perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
-      exit(1);
+      // Code du fils 2
+      if (execl("./Lecture","Lecture",getGroupe2(),NULL) == -1)
+      {
+        perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
+        exit(1);
+      }
     }
-  }
 
+  }
 
   if(recherche3Selectionnee()==1)
   {
@@ -208,19 +208,17 @@ void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
       perror("(Pere) Erreur de fork(3)");
       exit(1);
     }
-  }
 
-
-  if (idFils3 == 0)
-  {
-    // Code du fils 3
-    if (execl("./Lecture","Lecture",getGroupe3(),NULL) == -1)
+    if (idFils3 == 0)
     {
-      perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
-      exit(1);
+      // Code du fils 3
+      if (execl("./Lecture","Lecture",getGroupe3(),NULL) == -1)
+      {
+        perror("Erreur de execl()");//execution retourne un exit du nombre d'etudiant
+        exit(1);
+      }
     }
   }
-
   //code pere
   while((id = wait(&status)) != -1)
   {
@@ -228,19 +226,20 @@ void MainWindowEx3::on_pushButtonLancerRecherche_clicked()
 
     if(id==idFils1)
     {
-      setResultat1(WEXITSTATUS(status));
+      if(WIFEXITED(status))
+        setResultat1(WEXITSTATUS(status));
     }
     else if(id==idFils2)
     {
-      setResultat2(WEXITSTATUS(status));
+      if(WIFEXITED(status))
+        setResultat2(WEXITSTATUS(status));
     }
     else if(id==idFils3)
     {
-      setResultat3(WEXITSTATUS(status));
+      if(WIFEXITED(status))
+        setResultat3(WEXITSTATUS(status));
     }
   }
-
-  // close(fdDup);
 }
 
 void MainWindowEx3::on_pushButtonVider_clicked()
